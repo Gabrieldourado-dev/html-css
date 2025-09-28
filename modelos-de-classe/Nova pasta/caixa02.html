@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grouping tags</title>
+    <style>
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: rgb(106, 106, 103);
+        }
+
+        header{
+            background-color:white;
+            padding: 10px;
+            margin: 10px;
+        }
+
+         nav{
+            background-color: rgb(96, 95, 95);
+            padding: 4px;
+            box-shadow: 5px 6px 6px 1px rgba(0, 0, 0, 0.406);
+        }
+
+        nav > a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+
+        nav > a:hover {
+            text-decoration: underline;
+        }
+
+        main{
+            background-color: white;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 10px 0px;
+            box-shadow: 4px 4px 9px rgba(0, 0, 0, 0.484);
+        }
+
+        article{
+            background-color: lightgray;
+            padding: 5px;
+        }
+
+        article > aside{
+            background-color: rgb(112, 108, 108);
+        }
+
+        footer{
+            background-color: black;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin: 10px;
+        }
+
+        footer > p{
+            margin: 0px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>meu site</h1>
+        <nav>
+            <a href="#">Link</a>
+             <a href="#">Link</a>
+              <a href="#">Link</a>
+               <a href="#">Link</a>
+                <a href="#">Link</a>
+        </nav>
+    </header>
+    <main>
+        <section id="assuntos">
+
+        </section>
+        <section id="noticías">
+            <article>
+                <h2>Noticía sobre o Brasil</h2>
+                <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Amet laborum accusantium ab ad vel atque quasi, illo exercitationem explicabo asperiores sed delectus iste officiis nesciunt aspernatur beatae nulla dolore nemo?</p>
+                <aside>
+                    <p>Artigo escrito por Gabriel Fortunato Dourado</p>
+                </aside>
+            </article>
+            <article>
+
+            </article>
+        </section>
+    </main>
+    <footer>
+        <p>Desenvolvido por Douradodev</p>
+    </footer>
+</body>
+</html>

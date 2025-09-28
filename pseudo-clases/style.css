@@ -1,0 +1,30 @@
+@charset 'UTF-8';
+
+body {
+    background-color: rgb(75, 117, 240);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h1 {
+    color: rgb(255, 255, 255);
+    background-color: rgb(36, 36, 198);
+    text-align: center;
+}
+
+h2 {
+    color: rgb(0, 0, 70);
+}
+
+a {
+    color: darkblue;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+a :visited{
+    background-color: rgb(119, 119, 215);
+}
+
+a:active {
+    color: yellow;
+}

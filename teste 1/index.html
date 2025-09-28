@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Jogo da Cobrinha — Avançado (JS)</title>
+  <style>
+    :root{--bg:#0b1220;--card:#0f1724;--accent:#20c997;--muted:#8892a6}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#051018 0%,#071427 60%);color:#e6eef8}
+    .wrap{width:min(980px,96vw);display:grid;grid-template-columns:1fr 320px;gap:20px}
+    .panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:16px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    .game{display:flex;flex-direction:column;gap:10px}
+    canvas{background:linear-gradient(180deg,#071426 0%, #052033 100%);border-radius:8px;width:100%;height:640px;display:block}
+    .hud{display:flex;justify-content:space-between;align-items:center}
+    .hud .left{display:flex;gap:12px;align-items:center}
+    .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:var(--accent);cursor:pointer}
+    .small{font-size:13px;color:var(--muted)}
+    .controls{display:grid;gap:8px;margin-top:8px}
+    label{font-size:13px;color:var(--muted)}
+    input[type=range]{width:100%}
+    .scoreboard{display:flex;flex-direction:column;gap:8px}
+    .powerup{padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.02);font-size:13px}
+    .footer{font-size:12px;color:var(--muted);margin-top:8px}
+    @media(max-width:980px){.wrap{grid-template-columns:1fr;}.game canvas{height:56vh}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel game">
+      <div class="hud">
+        <div class="left">
+          <div style="font-weight:700;font-size:18px">Cobrinha Avançada</div>
+          <div class="small">Controles: setas / WASD / swipe (mobile)</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="small">Score: <span id="score">0</span></div>
+          <div class="small">High: <span id="high">0</span></div>
+          <button id="pauseBtn" class="btn">Pausar</button>
+          <button id="restartBtn" class="btn">Reiniciar</button>
+        </div>
+      </div>
+
+      <canvas id="c" width="800" height="640"></canvas>
+
+      <div class="footer small">Dicas: pegue power-ups, evite obstáculos, e tente bater a sua própria pontuação!</div>
+    </section>
+
+    <aside class="panel">
+      <div style="font-weight:700;margin-bottom:8px">Configurações & Estatísticas</div>
+      <div class="controls">
+        <label>Velocidade (passos por segundo): <span id="speedVal">8</span></label>
+        <input id="speed" type="range" min="4" max="18" step="1" value="8">
+
+        <label>Tamanho inicial: <span id="startVal">5</span></label>
+        <input id="start" type="range" min="3" max="10" step="1" value="5">
+
+        <label>Nível de obstáculos: <span id="obsVal">2</span></label>
+        <input id="obstacles" type="range" min="0" max="6" step="1" value="2">
+
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="wrapToggle" type="checkbox" checked /> <label for="wrapToggle">Permitir atravessar bordas</label>
+        </div>
+
+        <div style="margin-top:6px">Power-ups ativos:</div>
+        <div id="powerupsList" style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
+          <!-- dynamically filled -->
+        </div>
+
+        <div style="margin-top:12px" class="scoreboard">
+          <div class="small">Recordes por nível:</div>
+          <div id="records" class="small"></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+  // Jogo da Cobrinha Avançado - Implementação moderna
+  // Principais características:
+  // - movimentação baseada em grid com timestep fixo (game loop decoupled), animação suave via interpolation
+  // - obstáculos por nível, power-ups temporários (speed, slow, grow, shrink, invencível)
+  // - persistência de high score via localStorage, pause/resume, touch swipe para mobile
+  // - controles: setas, WASD; config em UI para velocidade, tamanho inicial e quantidade de obstáculos
+
+  (() => {
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const highEl = document.getElementById('high');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const speedRange = document.getElementById('speed');
+    const speedVal = document.getElementById('speedVal');
+    const startRange = document.getElementById('start');
+    const startVal = document.getElementById('startVal');
+    const obsRange = document.getElementById('obstacles');
+    const obsVal = document.getElementById('obsVal');
+    const wrapToggle = document.getElementById('wrapToggle');
+    const powerupsList = document.getElementById('powerupsList');
+    const records = document.getElementById('records');
+
+    const CELL = 20; // grid cell size in pixels
+    const COLS = Math.floor(canvas.width / CELL);
+    const ROWS = Math.floor(canvas.height / CELL);
+
+    let config = {
+      speed: parseInt(speedRange.value),
+      startLen: parseInt(startRange.value),
+      obstacles: parseInt(obsRange.value),
+      wrap: wrapToggle.checked
+    };
+
+    // Game state
+    let snake = []; // array of {x,y}
+    let dir = {x:1,y:0};
+    let nextDir = null;
+    let food = null;
+    let obstacles = [];
+    let powerups = [];
+    let activeEffects = [];
+    let score = 0;
+    let high = loadHighScore();
+    let gameOver = false;
+    let paused = false;
+
+    highEl.textContent = high;
+
+    // Fixed timestep variables
+    let lastTime = 0;
+    let acc = 0;
+
+    // Each 'tick' equals one grid step. We'll control ticksPerSecond via config.speed
+    function msPerTick() { return 1000 / config.speed; }
+
+    // High score storage
+    function loadHighScore(){
+      try{ return parseInt(localStorage.getItem('snake_high')||'0')||0; }catch(e){return 0}
+    }
+    function saveHighScore(v){ try{ localStorage.setItem('snake_high', String(v)); }catch(e){} }
+
+    function init() {
+      config.speed = parseInt(speedRange.value);
+      config.startLen = parseInt(startRange.value);
+      config.obstacles = parseInt(obsRange.value);
+      config.wrap = wrapToggle.checked;
+
+      snake = [];
+      const startX = Math.floor(COLS/2);
+      const startY = Math.floor(ROWS/2);
+      for(let i=0;i<config.startLen;i++) snake.push({x:startX-i,y:startY});
+      dir = {x:1,y:0}; nextDir = null;
+      score = 0; gameOver = false; paused=false; activeEffects = [];
+      obstacles = generateObstacles(config.obstacles);
+      spawnFood(); powerups = [];
+      updateUI();
+    }
+
+    function generateObstacles(level){
+      const list = [];
+      const n = Math.min(40, Math.floor(level * 6));
+      let tries = 0;
+      while(list.length < n && tries < 2000){
+        tries++;
+        const x = randInt(1, COLS-2);
+        const y = randInt(1, ROWS-2);
+        if(occupied(x,y)) continue;
+        list.push({x,y});
+      }
+      return list;
+    }
+
+    function occupied(x,y){
+      if(food && food.x===x && food.y===y) return true;
+      for(const s of snake) if(s.x===x && s.y===y) return true;
+      for(const o of obstacles) if(o.x===x && o.y===y) return true;
+      for(const p of powerups) if(p.x===x && p.y===y) return true;
+      return false;
+    }
+
+    function spawnFood(){
+      for(let i=0;i<2000;i++){
+        const x = randInt(0,COLS-1); const y = randInt(0,ROWS-1);
+        if(!occupied(x,y)) { food={x,y}; return; }
+      }
+      food=null;
+    }
+
+    function spawnPowerup(){
+      const types = ['speed','slow','grow','shrink','shield'];
+      const type = types[randInt(0, types.length-1)];
+      for(let i=0;i<500;i++){
+        const x = randInt(0,COLS-1); const y = randInt(0,ROWS-1);
+        if(!occupied(x,y)) { powerups.push({x,y,type,duration: type==='speed'||type==='slow'?5000:8000}); return; }
+      }
+    }
+
+    function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
+    // Movement & game logic
+    function tick(){
+      if(gameOver || paused) return;
+      if(nextDir){ // prevent reversing
+        if(!(nextDir.x === -dir.x && nextDir.y === -dir.y)) dir = nextDir;
+        nextDir = null;
+      }
+
+      const head = {...snake[0]};
+      head.x += dir.x; head.y += dir.y;
+
+      if(config.wrap){
+        if(head.x < 0) head.x = COLS-1; if(head.x >= COLS) head.x = 0;
+        if(head.y < 0) head.y = ROWS-1; if(head.y >= ROWS) head.y = 0;
+      } else {
+        if(head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS){
+          lose(); return;
+        }
+      }
+
+      // check collisions with self
+      for(let i=0;i<snake.length;i++){
+        if(snake[i].x===head.x && snake[i].y===head.y){
+          // if head collides with tail and we have shield, ignore
+          if(!hasEffect('shield')) { lose(); return; }
+        }
+      }
+
+      // check obstacles
+      for(const o of obstacles){ if(o.x===head.x && o.y===head.y){ if(!hasEffect('shield')){ lose(); return; } } }
+
+      snake.unshift(head);
+
+      // eat food?
+      if(food && head.x===food.x && head.y===food.y){
+        score += 10;
+        spawnFood();
+        // random chance to spawn a powerup
+        if(Math.random() < 0.35) spawnPowerup();
+      } else {
+        snake.pop(); // move normally
+      }
+
+      // powerup pickup
+      for(let i=0;i<powerups.length;i++){
+        const p = powerups[i];
+        if(p.x===head.x && p.y===head.y){
+          applyPowerup(p.type);
+          powerups.splice(i,1); i--;
+        }
+      }
+
+      // tail-trimming effect: shrink/grow handled via applyPowerup
+
+      // score updates
+      scoreEl.textContent = score;
+      if(score>high){ high=score; highEl.textContent=high; saveHighScore(high); }
+
+      // occasionally spawn powerup if none
+      if(powerups.length === 0 && Math.random() < 0.04) spawnPowerup();
+    }
+
+    function hasEffect(name){ return activeEffects.some(e=>e.type===name); }
+
+    function applyPowerup(type){
+      if(type==='speed'){
+        activeEffects.push({type:'speed',expires: performance.now()+6000});
+        config.speed = Math.min(30, config.speed + 6);
+      } else if(type==='slow'){
+        activeEffects.push({type:'slow',expires: performance.now()+7000});
+        config.speed = Math.max(3, config.speed - 4);
+      } else if(type==='grow'){
+        for(let i=0;i<3;i++) snake.push({...snake[snake.length-1]});
+      } else if(type==='shrink'){
+        for(let i=0;i<2;i++) if(snake.length>3) snake.pop();
+      } else if(type==='shield'){
+        activeEffects.push({type:'shield',expires: performance.now()+7000});
+      }
+      updateUI();
+      // ensure msPerTick uses new config.speed
+    }
+
+    function updateEffects(now){
+      let changed = false;
+      for(let i=0;i<activeEffects.length;i++){
+        if(activeEffects[i].expires <= now){
+          // reverse speed effects when expire
+          if(activeEffects[i].type === 'speed'){
+            config.speed = Math.max(4, config.speed - 6);
+          }
+          if(activeEffects[i].type === 'slow'){
+            config.speed = Math.min(18, config.speed + 4);
+          }
+          activeEffects.splice(i,1); i--; changed=true;
+        }
+      }
+      if(changed) updateUI();
+    }
+
+    function lose(){ gameOver = true; paused = true; pauseBtn.textContent='Jogo parado'; }
+
+    // ------- Rendering -------
+    function clear(){ ctx.clearRect(0,0,canvas.width,canvas.height); }
+
+    function drawGrid(){
+      ctx.save();
+      ctx.globalAlpha = 0.06;
+      for(let x=0;x<=COLS;x++){
+        ctx.fillRect(x*CELL-0.5,0,1,canvas.height);
+      }
+      for(let y=0;y<=ROWS;y++){
+        ctx.fillRect(0,y*CELL-0.5,canvas.width,1);
+      }
+      ctx.restore();
+    }
+
+    function render(interp){
+      clear();
+      drawGrid();
+
+      // draw obstacles
+      for(const o of obstacles){
+        drawCell(o.x,o.y, '#464e55');
+      }
+
+      // draw food
+      if(food) drawCell(food.x, food.y, '#ff6b6b', true);
+
+      // draw powerups
+      for(const p of powerups){
+        drawCell(p.x,p.y, powerColor(p.type));
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.fillText(p.type[0].toUpperCase(), p.x*CELL + CELL/2 - 4, p.y*CELL + CELL/2 + 5);
+      }
+
+      // draw snake with gradient
+      const grad = ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+      grad.addColorStop(0,'#00d4ff'); grad.addColorStop(1,'#20c997');
+      for(let i=snake.length-1;i>=0;i--){
+        const s = snake[i];
+        const alpha = 1 - (i / snake.length) * 0.7;
+        drawCell(s.x, s.y, grad, false, alpha);
+      }
+
+      // HUD overlays
+      ctx.save();
+      ctx.font = '12px sans-serif'; ctx.fillStyle = '#cfefff';
+      ctx.fillText('Len: ' + snake.length, 8, 14);
+      ctx.restore();
+
+      // active effects
+      let x = canvas.width - 120; let y = 12;
+      for(const e of activeEffects){
+        ctx.fillStyle = '#ffffff'; ctx.globalAlpha = 0.9; ctx.font='12px sans-serif';
+        ctx.fillText(e.type + ' ', x, y); x -= 70;
+      }
+    }
+
+    function powerColor(type){
+      switch(type){
+        case 'speed': return '#ffd166';
+        case 'slow': return '#7f8c8d';
+        case 'grow': return '#6ee7b7';
+        case 'shrink': return '#9aa0ff';
+        case 'shield': return '#b2f5ea';
+      }
+      return '#fff';
+    }
+
+    function drawCell(cx,cy,fill,rounded=false,alpha=1){
+      ctx.save(); ctx.globalAlpha = alpha;
+      if(typeof fill === 'string') ctx.fillStyle = fill; else ctx.fillStyle = fill;
+      const px = cx*CELL, py = cy*CELL;
+      const r = rounded ? CELL*0.18 : CELL*0.06;
+      roundRect(ctx, px+1, py+1, CELL-2, CELL-2, r, true, false);
+      ctx.restore();
+    }
+
+ function roundRect(ctx,x,y,w,h,r,fill,stroke){
+      if(typeof r === 'number') r = {tl:r,tr:r,br:r,bl:r};
+      ctx.beginPath();
+      ctx.moveTo(x + r.tl, y);
+      ctx.lineTo(x + w - r.tr, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r.tr);
+      ctx.lineTo(x + w, y + h - r.br);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r.br, y + h);
+      ctx.lineTo(x + r.bl, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r.bl);
+      ctx.lineTo(x, y + r.tl);
+      ctx.quadraticCurveTo(x, y, x + r.tl, y);
+      ctx.closePath();
+      if(fill) ctx.fill();
+      if(stroke) ctx.stroke();
+    }
+
+    // ----------------- input -----------------
+    window.addEventListener('keydown', e=>{
+      if(e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') nextDir = {x:0,y:-1};
+      if(e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') nextDir = {x:0,y:1};
+      if(e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') nextDir = {x:-1,y:0};
+      if(e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') nextDir = {x:1,y:0};
+      if(e.key === ' '){ paused = !paused; pauseBtn.textContent = paused ? 'Retomar' : 'Pausar'; }
+    });
+
+    // touch swipe support
+    let touchStart = null;
+    canvas.addEventListener('touchstart', e=>{ const t = e.touches[0]; touchStart = {x:t.clientX, y:t.clientY}; });
+    canvas.addEventListener('touchend', e=>{
+      if(!touchStart) return; const t = e.changedTouches[0]; const dx = t.clientX - touchStart.x; const dy = t.clientY - touchStart.y; const absX=Math.abs(dx), absY=Math.abs(dy);
+      if(Math.max(absX,absY) < 20) return;
+      if(absX > absY) nextDir = dx>0?{x:1,y:0}:{x:-1,y:0}; else nextDir = dy>0?{x:0,y:1}:{x:0,y:-1};
+      touchStart = null;
+    });
+
+    pauseBtn.addEventListener('click', ()=>{ paused = !paused; pauseBtn.textContent = paused ? 'Retomar' : 'Pausar'; });
+    restartBtn.addEventListener('click', ()=>{ init(); });
+
+    speedRange.addEventListener('input', ()=>{ speedVal.textContent = speedRange.value; config.speed = parseInt(speedRange.value); updateUI(); });
+    startRange.addEventListener('input', ()=>{ startVal.textContent = startRange.value; });
+    obsRange.addEventListener('input', ()=>{ obsVal.textContent = obsRange.value; });
+    wrapToggle.addEventListener('change', ()=>{ config.wrap = wrapToggle.checked; });
+
+    function updateUI(){
+      powerupsList.innerHTML = '';
+      const map = {speed:'Acelera', slow:'Lenta', grow:'Crescer', shrink:'Encolher', shield:'Escudo'};
+      for(const e of activeEffects){
+        const div = document.createElement('div'); div.className='powerup'; div.textContent = map[e.type] || e.type; powerupsList.appendChild(div);
+      }
+      records.innerHTML = 'High: ' + high;
+    }
+
+    // ---------------- main loop ----------------
+    function loop(now){
+      if(!lastTime) lastTime = now; const dt = now - lastTime; lastTime = now;
+      updateEffects(now);
+
+      if(!paused && !gameOver){
+        acc += dt;
+        const tickMs = msPerTick();
+        while(acc >= tickMs){ tick(); acc -= tickMs; }
+      }
+
+      const interp = acc / msPerTick();
+      render(interp);
+      requestAnimationFrame(loop);
+    }
+
+    // utility: initialize and start
+    init(); requestAnimationFrame(loop);
+
+    // small helpers
+    function applyConfigFromUI(){ config.speed = parseInt(speedRange.value); }
+
+    // small helpers for debugging
+    function dbg(){ console.log({snakeLen:snake.length, score, config}); }
+
+  })();
+  </script>
+</body>
+</html>

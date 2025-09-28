@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfólio - Gabriel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="logo">Gabriel.dev</div>
+    <nav>
+      <ul>
+        <li><a href="#hero">Início</a></li>
+        <li><a href="#sobre">Sobre</a></li>
+        <li><a href="#projetos">Projetos</a></li>
+        <li><a href="#contato">Contato</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section id="hero" class="hero">
+    <div class="hero-content">
+      <h1>Olá, eu sou <span class="destaque">Gabriel</span></h1>
+      <h2><span id="typing"></span></h2>
+      <p>Crio sites modernos, rápidos e responsivos.</p>
+      <a href="#projetos" class="btn">Explorar Projetos</a>
+    </div>
+  </section>
+
+  <!-- Sobre -->
+  <section id="sobre" class="sobre">
+    <h2>Sobre Mim</h2>
+    <p>Sou desenvolvedor web apaixonado por tecnologia e design. 
+    Trabalho com HTML, CSS e JavaScript, criando interfaces modernas e intuitivas.
+    Meu foco é entregar soluções que unam **performance** e **experiência do usuário**.</p>
+  </section>
+
+  <!-- Projetos -->
+  <section id="projetos" class="projetos">
+    <h2>Projetos</h2>
+    <div class="grid">
+      <div class="card reveal">
+        <h3>Projeto 1</h3>
+        <p>Landing page responsiva em HTML, CSS e JS.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Projeto 2</h3>
+        <p>Aplicação interativa com JavaScript puro.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Projeto 3</h3>
+        <p>Dashboard com tema escuro e animações suaves.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contato -->
+  <section id="contato" class="contato">
+    <h2>Contato</h2>
+    <form id="formContato">
+      <input type="text" placeholder="Seu Nome" required>
+      <input type="email" placeholder="Seu Email" required>
+      <textarea placeholder="Sua Mensagem" required></textarea>
+      <button type="submit">Enviar</button>
+    </form>
+    <p id="msgSucesso" class="hidden">✅ Mensagem enviada com sucesso!</p>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 Gabriel Fortunato - Todos os direitos reservados</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
