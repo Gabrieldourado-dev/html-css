@@ -40,7 +40,7 @@ header{
   background-image: linear-gradient(to bottom, var(--cor4), var(--cor1));
   min-height: 150px;
   text-align: center;
-  padding-top: 30px;
+  padding-top: 10px
 }
 
 header > h1 {
@@ -69,9 +69,9 @@ nav{
 nav > a {
    text-decoration: none;
    color: white;
-   padding: 5px;
+   padding: px;
    font-weight: bold;
-   border-radius: 5px;
+   border-radius: 3px;
    transition-duration: 0.5s;
 }
 
