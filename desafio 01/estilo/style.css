@@ -69,7 +69,7 @@ nav{
 nav > a {
    text-decoration: none;
    color: white;
-   padding: px;
+   padding: 10px;
    font-weight: bold;
    border-radius: 3px;
    transition-duration: 0.5s;
