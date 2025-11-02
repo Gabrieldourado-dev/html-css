@@ -46,7 +46,7 @@ header{
 header > h1 {
   color: white;
   font-family: var(--fonte-destaque);
-  margin-bottom: 20px;
+  margin-bottom:  20px;
   text-shadow: 3px 3px rgba(0, 0, 0, 0.354);
 }
 
@@ -73,6 +73,7 @@ nav > a {
    font-weight: bold;
    border-radius: 3px;
    transition-duration: 0.5s;
+   transition-delay: 0.1s;
 }
 
 nav > a:hover{
@@ -164,6 +165,7 @@ footer{
    text-align: center;
    font-size: 0.9em;
    padding: 5px;
+   
 }
 
 aside {
