@@ -1,10 +1,10 @@
 @charset "UTF-8";
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap");
 
 @font-face {
-  font-family: 'Android';
-  src: url('../fontes/idroid.otf') format('opentype');
+  font-family: "Android";
+  src: url("../fontes/idroid.otf") format("opentype");
   font-weight: normal;
 }
 
@@ -18,8 +18,8 @@
   --cor5: #063d1e;
 
   --fonte-padrao: Arial, Verdana, Helvetica, sans-serif;
-  --fonte-destaque: 'Bebas Neue', cursive;
-  --fonte-android: 'Android', cursive;
+  --fonte-destaque: "Bebas Neue", cursive;
+  --fonte-android: "Android", cursive;
 }
 
 /* 🔧 Reset e base */
@@ -38,11 +38,11 @@ body {
 
 /* 🔗 Links externos */
 a.externo::after {
-  content: ' 🔗';
+  content: " 🔗";
 }
 
 /* 🧭 Cabeçalho */
-header {  
+header {
   background: linear-gradient(to bottom, var(--cor4), var(--cor1));
   min-height: 150px;
   text-align: center;
@@ -58,9 +58,14 @@ header h1 {
 }
 
 header p {
+  font-family: var(--fonte-padrao);
   font-size: 1.1em;
+  color: white;
   max-width: 500px;
+  padding-right: 10px;
+  padding-left: 10px;
   margin: auto;
+  padding-bottom: 50px;
   text-shadow: 1px 1px rgba(0, 0, 0, 0.2);
 }
 
@@ -187,10 +192,10 @@ aside h3 {
 
 aside ul {
   list-style-position: inside;
-  columns: 2;   
-  list-style-type: '✔️ ';
+  columns: 2;
+  list-style-type: "✔️ ";
   padding-left: 10px;
-  padding: ;
+  padding: 10px;
 }
 
 /* ⚓ Rodapé */
@@ -212,4 +217,3 @@ footer a:hover {
   text-decoration: underline;
   color: var(--cor0);
 }
-
