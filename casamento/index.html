@@ -5,202 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Convite de Casamento</title>
 
+  <!-- Fontes -->
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Montserrat', sans-serif;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-      background: url('https://images.unsplash.com/photo-1525310072745-f49212b5ac6d') no-repeat center/cover;
-    }
-
-    body::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(255,255,255,0.8);
-      z-index: 0;
-    }
-
-    /* PETALAS */
-    .petala {
-      position: fixed;
-      top: -10px;
-      width: 10px;
-      height: 10px;
-      background: pink;
-      border-radius: 50%;
-      opacity: 0.7;
-      animation: cair linear infinite;
-      z-index: 1;
-    }
-
-    @keyframes cair {
-      to {
-        transform: translateY(110vh) rotate(360deg);
-      }
-    }
-
-    /* ENVELOPE */
-    .envelope {
-      width: 320px;
-      height: 200px;
-      background: #2f6f4f;
-      border-radius: 12px;
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-      text-align: center;
-      z-index: 2;
-      transition: transform 0.4s;
-    }
-
-    .envelope:hover {
-      transform: scale(1.05);
-    }
-
-    .tampa {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #25593f;
-      clip-path: polygon(0 0, 50% 60%, 100% 0);
-      transform-origin: top;
-      transition: transform 1s ease;
-    }
-
-    .envelope.aberto .tampa {
-      transform: rotateX(180deg);
-    }
-
-    .texto-envelope {
-      position: relative;
-      z-index: 1;
-    }
-
-    .envelope.aberto {
-      opacity: 0;
-      transform: scale(0.8);
-      pointer-events: none;
-      transition: 0.5s;
-    }
-
-    /* CARTA (aparece depois) */
-    .carta {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      opacity: 0;
-      transition: opacity 1s ease 0.5s;
-      z-index: 1;
-    }
-
-    .carta.mostrar {
-      opacity: 1;
-    }
-
-    .card {
-      background: rgba(255,255,255,0.95);
-      padding: 40px 30px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      text-align: center;
-      max-width: 380px;
-      border: 2px solid #dcecdc;
-      transform: translateY(50px);
-      opacity: 0;
-      transition: all 1s ease 0.8s;
-    }
-
-    .carta.mostrar .card {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    h1 {
-      font-family: 'Great Vibes', cursive;
-      font-size: 36px;
-      color: #2f6f4f;
-    }
-
-    .rings {
-      font-size: 22px;
-      color: goldenrod;
-    }
-
-    h2 {
-      font-family: 'Great Vibes', cursive;
-      font-size: 28px;
-      color: #2f6f4f;
-      margin-bottom: 10px;
-      letter-spacing: 1px;
-    }
-
-    .date {
-      margin: 15px 0;
-      font-weight: bold;
-      color: #2f6f4f;
-    }
-
-    .btn {
-      margin-top: 20px;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 25px;
-      background: #2f6f4f;
-      color: white;
-      cursor: pointer;
-    }
-
-    a {
-      display: block;
-      margin-top: 10px;
-      color: #2f6f4f;
-      font-weight: bold;
-      text-decoration: none;
-    }
-
-      .contador {
-      margin-top: 15px;
-      font-size: 14px;
-      color: #2f6f4f;
-      font-weight: bold;
-    }
-
-  </style>
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<!-- PETALAS -->
-<script>
-  for (let i = 0; i < 30; i++) {
-    const petala = document.createElement('div');
-    petala.classList.add('petala');
-    petala.style.left = Math.random() * 100 + 'vw';
-    petala.style.animationDuration = (5 + Math.random() * 5) + 's';
-    document.body.appendChild(petala);
-  }
-</script>
 
 <!-- ENVELOPE -->
 <div class="envelope" onclick="abrirConvite()">
   <div class="tampa"></div>
-  <div class="texto-envelope">Toque para abrir 💌    
-  </div>
+  <div class="texto-envelope">Toque para abrir 💌</div>
 </div>
 
 <!-- CARTA -->
@@ -227,44 +43,13 @@
     <a href="https://www.google.com/maps" target="_blank">
       📍 Como chegar
     </a>
+
     <div class="contador" id="contador"></div>
   </div>
 </div>
 
-<script>
-  function abrirConvite() {
-    document.querySelector('.envelope').classList.add('aberto');
-    document.getElementById('carta').classList.add('mostrar');
-  }
-
-  function confirmarPresenca() {
-    const numero = "5521965137656";
-    const mensagem = encodeURIComponent(
-      "Olá! Estou confirmando minha presença no casamento de Gabriel e Ana Carolina 💍"
-    );
-    window.open(`https://wa.me/${numero}?text=${mensagem}`, '_blank');
-  }
-  function atualizarContador() {
-    const dataEvento = new Date('2026-10-03T18:00:00');
-    const agora = new Date();
-    const diff = dataEvento - agora;
-
-    if (diff <= 0) {
-      document.getElementById('contador').innerText = 'Chegou o grande dia! 💍';
-      return;
-    }
-
-    const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const minutos = Math.floor((diff / (1000 * 60)) % 60);
-    const segundos = Math.floor((diff / 1000) % 60);
-
-    document.getElementById('contador').innerText = `Faltam ${dias}d ${horas}h ${minutos}m ${segundos}s 💚`;
-  }
-
-  setInterval(atualizarContador, 1000);
-  atualizarContador();
-</script>
+<!-- JS -->
+<script src="script.js"></script>
 
 </body>
 </html>
