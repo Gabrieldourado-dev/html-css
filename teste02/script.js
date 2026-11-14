@@ -1,6 +1,6 @@
 // Efeito de digitação no Hero
 const typingElement = document.getElementById("typing");
-const words = ["Front-End Developer", "Web Designer", "Criador de Experiências Digitais"];
+const words = ["Front-End Developer", "Web Designer", "Crio experiências digitais"];
 let wordIndex = 0;
 let charIndex = 0;
 let currentWord = "";
